@@ -24,33 +24,10 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-      - name: Packaging
-        run: tar -zcvf paddleflow-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz output/
-      - name: Uploading assets
-        uses: actions/upload-artifact@v3
+      - name: GoReleaser
+        uses: goreleaser/goreleaser-action@v3
         with:
-          name: paddleflow-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: paddleflow-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
-  publish:
-    strategy:
-      matrix:
-        go-version: [ 1.18.x ]
-        goos: [ linux ]
-        goarch: [ amd64 ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: CreateRelease
-        run: echo ${{ github.sha }} > Release.txt
-      - name: Test
-        run: cat Release.txt
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          draft: true
-          body_path: ${{ github.workspace }}-CHANGELOG.txt
-          files: |
-            Release.txt
-            paddleflow-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
-            LICENSE
-
+          version: latest
+          args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
