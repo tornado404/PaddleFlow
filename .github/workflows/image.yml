@@ -17,13 +17,6 @@ jobs:
         goarch: [amd64, arm64] # 需要打包的架构
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: |
-          echo '${{ toJSON(github) }}'
-          echo $(uname -m)
-          echo $(uname -s)
-          sudo apt-get install -y gcc automake autoconf libtool make
       - name: Dump event context
         id: github_event_step
         run: cat /home/runner/work/_temp/_github_workflow/event.json
@@ -34,7 +27,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Install gcc
-        id: github_context_step
+        id: install_gcc
         run: |
           echo '${{ toJSON(github) }}'
           echo $(uname -m)
