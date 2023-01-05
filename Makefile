@@ -9,8 +9,12 @@ GOMOD   := $(GO) mod
 GOBUILD := $(GO) build
 GOTEST  := $(GO) test -gcflags="-N -l"
 GOPKGS  := $$($(GO) list ./...| grep -vE "vendor" | grep -vE "github.com/PaddlePaddle/PaddleFlow/pkg/fs/fuse/ufs")
+GOARCH := $(shell $(GO) env GOARCH)
+GOOS := $(shell $(GO) env GOOS)
 export PATH := $(GOPATH)/bin/:$(PATH)
 
+CC  := $(shell $(GO) env CC)
+CC_FOR_TARGET := $(shell $(GO) env CC_FOR_TARGET)
 # test cover files
 COVPROF := $(HOMEDIR)/covprof.out  # coverage profile
 COVFUNC := $(HOMEDIR)/covfunc.txt  # coverage profile information for each function
@@ -33,7 +37,7 @@ LD_FLAGS    = " \
 all: prepare compile package
 
 # make prepare, download dependencies
-prepare: gomod
+prepare: gomod arch
 
 gomod:
 	$(GO) env -w GO111MODULE=on
@@ -41,14 +45,36 @@ gomod:
 	$(GO) env -w CGO_ENABLED=0
 	$(GOMOD) download
 
+arch:
+    ifeq ($(GOARCH),amd64)
+		@echo "arch是$(GOARCH)"
+    else
+		@echo "arch是$(GOARCH)"
+        CC=aarch64-linux-gnu-gcc
+        CC_FOR_TARGET=gcc-aarch64-linux-gnu
+    endif
+
+
 # make compile
 compile: build
 
 build:
-	CGO_ENABLED=1 $(GOBUILD) -ldflags ${LD_FLAGS} -trimpath -o $(HOMEDIR)/paddleflow $(HOMEDIR)/cmd/server/main.go
+	CGO_ENABLED=1 CC=$(CC) CC_FOR_TARGET=$(CC_FOR_TARGET) $(GOBUILD) -ldflags ${LD_FLAGS} -trimpath -o $(HOMEDIR)/paddleflow $(HOMEDIR)/cmd/server/main.go
 	$(GOBUILD) -ldflags ${LD_FLAGS} -trimpath -o $(HOMEDIR)/pfs-fuse     $(HOMEDIR)/cmd/fs/fuse/main.go
 	$(GOBUILD) -ldflags ${LD_FLAGS} -trimpath -o $(HOMEDIR)/csi-plugin   $(HOMEDIR)/cmd/fs/csi-plugin/main.go
 	$(GOBUILD) -ldflags ${LD_FLAGS} -trimpath -o $(HOMEDIR)/cache-worker $(HOMEDIR)/cmd/fs/location-awareness/cache-worker/main.go
+
+
+build-macos:
+	CGO_ENABLED=1 CC=gcc GOOS= GOARCH=amd64 $(GOBUILD) -ldflags ${LD_FLAGS} -trimpath -o $(HOMEDIR)/paddleflow $(HOMEDIR)/cmd/server/main.go
+	$(GOBUILD) -ldflags ${LD_FLAGS} -trimpath -o $(HOMEDIR)/pfs-fuse     $(HOMEDIR)/cmd/fs/fuse/main.go
+	$(GOBUILD) -ldflags ${LD_FLAGS} -trimpath -o $(HOMEDIR)/csi-plugin   $(HOMEDIR)/cmd/fs/csi-plugin/main.go
+	$(GOBUILD) -ldflags ${LD_FLAGS} -trimpath -o $(HOMEDIR)/cache-worker $(HOMEDIR)/cmd/fs/location-awareness/cache-worker/main.go
+
+
+build-by-xgo:
+	$(GO) install src.techknowlogick.com/xgo@latest
+	$(GOPATH)/bin/xgo -ldflags ${LD_FLAGS} -trimpath -out $(HOMEDIR)/paddleflow -targets $(GOOS)/$(GOARCH) -pkg $(HOMEDIR)/cmd/server/main.go .
 
 # make doc
 doc:
