@@ -5,7 +5,7 @@ on:
       - '*'
 
 env:
-  BASE_REPO: paddleflow
+  BASE_REPO: ${{ secrets.DOCKERHUB_USERNAME }}
   PF_SERVER: paddleflow-server
   PF_CSI: pfs-csi-plugin
 jobs:
