@@ -24,6 +24,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -636,9 +637,11 @@ func NewHdfsFileSystem(properties map[string]interface{}) (UnderFileStorage, err
 	options := hdfs.ClientOptions{
 		Addresses: strings.Split(nameNodeAddress, ","),
 	}
-	useDatanodeHostname, ok := properties[common.UseDatanodeHostname].(bool)
-	if ok && useDatanodeHostname {
-		options.UseDatanodeHostname = true
+	useDatanodeHostname, ok := properties[common.UseDatanodeHostname].(string)
+	if ok {
+		if use, err := strconv.ParseBool(useDatanodeHostname); err == nil {
+			options.UseDatanodeHostname = use
+		}
 	}
 	options.User = properties[common.UserKey].(string)
 	cli, err := hdfs.NewClient(options)
