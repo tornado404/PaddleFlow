@@ -116,6 +116,7 @@ func TestFindUniqueParentDirs(t *testing.T) {
 				"/home/user/docs/assignment.docx",
 				"/var/log/sys.log",
 				"/usr/bin/someexecutable",
+				"/usr/bin/",
 			},
 		},
 		{
@@ -149,7 +150,9 @@ func TestFindUniqueParentDirs(t *testing.T) {
 			paths: []string{
 				"/",
 			},
-			expected: []string{},
+			expected: []string{
+				"/",
+			},
 		},
 	}
 
