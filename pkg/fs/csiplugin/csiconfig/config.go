@@ -80,6 +80,7 @@ func ParsePodResources(cpuLimit, memoryLimit string) (corev1.ResourceRequirement
 			corev1.ResourceCPU:    resource.MustParse(defaultMountPodCpuRequest),
 			corev1.ResourceMemory: resource.MustParse(defaultMountPodMemRequest),
 		},
+		Limits: map[corev1.ResourceName]resource.Quantity{},
 	}
 
 	var err error
