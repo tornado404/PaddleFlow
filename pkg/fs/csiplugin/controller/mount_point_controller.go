@@ -248,7 +248,9 @@ func (m *MountPointController) handleRunningPod(pod v1.Pod, updateMounts bool) {
 
 func (m *MountPointController) CheckAndRemountVolumeMount(volumeMount volumeMountInfo) error {
 	// TODO(dongzezhao) get mountParameters from volumeMountInfo
+	m.pvMapLock.Lock()
 	pvParams_, ok := m.pvParamsMap[volumeMount.VolumeName]
+	m.pvMapLock.Unlock()
 	if !ok {
 		log.Errorf("get pfs parameters [%s] not exist", volumeMount.VolumeName)
 		return fmt.Errorf("get pfs parameters [%s] not exist", volumeMount.VolumeName)
