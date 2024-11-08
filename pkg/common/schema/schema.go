@@ -22,6 +22,7 @@ import (
 )
 
 type ComponentView interface {
+	GetID() string
 	GetComponentName() string
 	GetParentDagID() string
 	GetStatus() JobStatus
@@ -58,6 +59,10 @@ type JobView struct {
 	JobMessage  string            `json:"jobMessage"`
 	CacheRunID  string            `json:"cacheRunID"`
 	CacheJobID  string            `json:"cacheJobID"`
+}
+
+func (j JobView) GetID() string {
+	return j.JobID
 }
 
 func (j JobView) GetComponentName() string {
@@ -116,6 +121,10 @@ type DagView struct {
 	Status      JobStatus                  `json:"status"`
 	Message     string                     `json:"message"`
 	EntryPoints map[string][]ComponentView `json:"entryPoints"`
+}
+
+func (d DagView) GetID() string {
+	return d.DagID
 }
 
 func (d DagView) GetComponentName() string {
